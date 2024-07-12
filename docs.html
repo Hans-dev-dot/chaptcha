@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dokumentasi API Captcha</title>
+  <link rel="stylesheet" href="style.css">
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dokumentasi API Captcha</h1>
+
+    <h2>Endpoint</h2>
+
+    <h3>/api/captcha</h3>
+
+    <p><strong>Method:</strong> <code>GET</code></p>
+
+    <p>Endpoint ini digunakan untuk mengambil captcha dalam format SVG.</p>
+
+    <h4>Contoh Penggunaan</h4>
+
+    <pre>GET /api/captcha</pre>
+
+    <h4>Response</h4>
+
+    <ul>
+      <li><strong>200 OK:</strong> Captcha berhasil dibuat dan dikirimkan dalam format SVG.</li>
+    </ul>
+
+    <h3>/api/verify-captcha</h3>
+
+    <p><strong>Method:</strong> <code>POST</code></p>
+
+    <p>Endpoint ini digunakan untuk memverifikasi input captcha yang dimasukkan oleh pengguna.</p>
+
+    <h4>Request Body</h4>
+
+    <pre>{
+  "userInput": "string"
+}</pre>
+
+    <p>userInput: String yang merupakan input captcha yang dimasukkan oleh pengguna.</p>
+
+    <h4>Contoh Penggunaan</h4>
+
+    <pre>POST /api/verify-captcha
+Content-Type: application/json
+
+{
+  "userInput": "abc123"
+}</pre>
+
+    <h4>Response</h4>
+
+    <ul>
+      <li><strong>200 OK:</strong> Captcha valid, dan penggunaan captcha dibersihkan.
+        <pre>{
+  "success": true,
+  "message": "Captcha valid"
+}</pre>
+      </li>
+      <li><strong>400 Bad Request:</strong> Captcha tidak tersedia atau tidak valid.
+        <pre>{
+  "success": false,
+  "message": "Captcha tidak tersedia"
+}</pre>
+      </li>
+      <li><strong>429 Too Many Requests:</strong> Pengguna telah mencoba captcha yang tidak valid tiga kali berturut-turut. Pengguna harus menunggu 3 menit sebelum mencoba lagi.
+        <pre>{
+  "success": false,
+  "message": "Anda telah mencoba 3 kali yang salah. Silakan tunggu 3 menit sebelum mencoba lagi."
+}</pre>
+      </li>
+    </ul>
+
+    <h2>Contoh Penggunaan di Aplikasi Web</h2>
+
+    <h3>Mendapatkan Captcha</h3>
+
+    <pre>async function fetchCaptcha() {
+  try {
+    const response = await fetch('/api/captcha');
+    const captchaSVG = await response.text();
+    document.getElementById('captchaContainer').innerHTML = captchaSVG;
+  } catch (error) {
+    console.error('Gagal mengambil captcha:', error.message);
+  }
+}
+
+// Memuat captcha saat halaman dimuat
+window.onload = fetchCaptcha;</pre>
+
+    <h3>Verifikasi Captcha</h3>
+
+    <pre>async function verifyCaptcha() {
+  const userInput = document.getElementById('captchaInput').value;
+
+  try {
+    const response = await fetch('/api/verify-captcha', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userInput })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Captcha valid!');
+      // Lakukan tindakan lanjutan setelah captcha divalidasi
+    } else {
+      alert('Captcha tidak valid: ' + result.message);
+    }
+
+    // Refresh captcha setelah verifikasi, untuk memastikan captcha baru di-generate
+    fetchCaptcha();
+
+  } catch (error) {
+    console.error('Gagal verifikasi captcha:', error.message);
+  }
+}</pre>
+
+    <h2>Keterangan Tambahan</h2>
+
+    <ul>
+      <li>Pastikan untuk memanggil endpoint <code>/api/captcha</code> terlebih dahulu untuk mendapatkan captcha sebelum pengguna dapat memverifikasi captcha.</li>
+      <li>Setelah tiga kali percobaan gagal yang berhasil, pengguna akan diminta untuk menunggu 3 menit sebelum mencoba lagi.</li>
+    </ul>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 Dokumentasi API Captcha. Hak cipta dilindungi.</p>
+    </div>
+  </footer>
+</body>
+</html>
